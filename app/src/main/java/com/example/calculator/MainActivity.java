@@ -6,6 +6,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class MainActivity extends AppCompatActivity {
@@ -15,8 +16,10 @@ public class MainActivity extends AppCompatActivity {
 
     // Variables to hold the operands and calculations
     private Double operand1 = null;
-    private Double operand2 = null;
     private String pendingOperation = "=";
+
+    private static final String STATE_PENDING_OPERATION = "PendingOperation";
+    private static final String STATE_OPERAND1 = "Operand1";
 
 
     @Override
@@ -71,8 +74,11 @@ public class MainActivity extends AppCompatActivity {
                 Button b = (Button) v;
                 String op = b.getText().toString();
                 String value = newNumber.getText().toString();
-                if (value.length() != 0){
-                    performOperation(value, op);
+                try {
+                    Double doubleValue = Double.valueOf(value);
+                    performOperation(doubleValue, op);
+                } catch (NumberFormatException e) {
+                    newNumber.setText("");
                 }
                 pendingOperation = op;
                 displayOperation.setText(pendingOperation);
@@ -88,34 +94,48 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void performOperation(String value, String operation){
-        if (null == operand1){
-            operand1 = Double.valueOf(value);
+    @Override
+    protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState){
+        super.onRestoreInstanceState(savedInstanceState);
+        pendingOperation = savedInstanceState.getString(STATE_PENDING_OPERATION);
+        operand1 = savedInstanceState.getDouble(STATE_OPERAND1);
+        displayOperation.setText(pendingOperation);
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        outState.putString(STATE_PENDING_OPERATION, pendingOperation);
+        if(operand1 != null){
+            outState.putDouble(STATE_OPERAND1, operand1);
         }
-        else {
-            operand2 = Double.valueOf(value);
+        super.onSaveInstanceState(outState);
+    }
+
+    private void performOperation(Double value, String operation) {
+        if (null == operand1) {
+            operand1 = value;
+        } else {
             if (pendingOperation.equals("=")) {
                 pendingOperation = operation;
             }
-            switch (pendingOperation){
+            switch (pendingOperation) {
                 case "=":
-                    operand1 = operand2;
+                    operand1 = value;
                     break;
                 case "+":
-                    operand1 += operand2;
+                    operand1 += value;
                     break;
                 case "-":
-                    operand1 -= operand2;
+                    operand1 -= value;
                     break;
                 case "*":
-                    operand1 *= operand2;
+                    operand1 *= value;
                     break;
                 case "/":
-                    if (operand2 == 0){
+                    if (value == 0) {
                         operand1 = 0.0;
-                    }
-                    else{
-                        operand1 /= operand2;
+                    } else {
+                        operand1 /= value;
                     }
                     break;
             }
@@ -124,4 +144,5 @@ public class MainActivity extends AppCompatActivity {
             newNumber.setText("");
         }
     }
+
 }
