@@ -91,6 +91,20 @@ public class MainActivity extends AppCompatActivity {
         division.setOnClickListener(opListener);
         solve.setOnClickListener(opListener);
 
+        View.OnClickListener negListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String value = newNumber.getText().toString();
+                try {
+                    Double doubleValue = Double.valueOf(value);
+                    switchSigns(doubleValue);
+                } catch (NumberFormatException e) {
+                    newNumber.setText("");
+                }
+            }
+        };
+
+        negative.setOnClickListener(negListener);
 
     }
 
@@ -143,6 +157,12 @@ public class MainActivity extends AppCompatActivity {
             result.setText(operand1.toString());
             newNumber.setText("");
         }
+    }
+
+    private void switchSigns(Double value) {
+        value *= -1;
+        String newValue = value.toString();
+        newNumber.setText(newValue);
     }
 
 }
